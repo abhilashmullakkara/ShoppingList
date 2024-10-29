@@ -22,5 +22,7 @@ interface ItemDao {
 
     @Query("SELECT * FROM item")
     fun getAllItems(): Flow<List<Item>>
+    @Query("DELETE FROM item")
+    suspend fun deleteAllItems()
 }
 

@@ -60,6 +60,8 @@ android {
 }
 
 dependencies {
+    implementation (libs.androidx.navigation.compose.v283)
+
     implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.6.0")
 
     implementation (libs.androidx.core.splashscreen)
