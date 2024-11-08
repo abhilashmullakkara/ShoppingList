@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -302,20 +303,25 @@ fun BannerAdView(
     }
 }
 @Composable
-fun AddItemInput(onAddItem: (Item) -> Unit) {
+fun AddItemInput(
+    modifier: Modifier = Modifier,
+    onAddItem: (Item) -> Unit
+) {
     var itemName by remember { mutableStateOf("") }  // String type
     var itemQuantity by remember { mutableStateOf("") }  // String type
-    val focusRequester = remember { FocusRequester() }
+    val nameFocusRequester = remember { FocusRequester() }
+    val quantityFocusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
 
     Row(modifier = Modifier.padding(start = 8.dp).fillMaxWidth()) {
+
         TextField(
             value = itemName,  // Ensure this is a String
             onValueChange = { itemName = it },
             label = { Text("Item Name", color = Color.Black, fontSize = 16.sp) },
             modifier = Modifier
                 .fillMaxWidth(0.45f)
-                .focusRequester(focusRequester),
+                .focusRequester(nameFocusRequester),
 
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
@@ -325,7 +331,7 @@ fun AddItemInput(onAddItem: (Item) -> Unit) {
                         itemName = ""
                         itemQuantity = ""
                         coroutineScope.launch {
-                            focusRequester.requestFocus()
+                            nameFocusRequester.requestFocus()
                         }
                     }
                 }
@@ -333,6 +339,7 @@ fun AddItemInput(onAddItem: (Item) -> Unit) {
         )
 
         Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.weight(0.5f))
 
         TextField(
             value = itemQuantity,
@@ -340,7 +347,7 @@ fun AddItemInput(onAddItem: (Item) -> Unit) {
             label = { Text("Unit", color = Color.Black, fontSize = 16.sp) },
             modifier = Modifier
                 .fillMaxWidth(0.45f)
-                .focusRequester(focusRequester),
+                .focusRequester(quantityFocusRequester),
 
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
@@ -349,33 +356,37 @@ fun AddItemInput(onAddItem: (Item) -> Unit) {
                         onAddItem(Item(name = itemName, quantity = itemQuantity))
                         itemName = ""
                         itemQuantity = ""
-
-                        // Request focus back to the first input field
                         coroutineScope.launch {
-                            focusRequester.requestFocus()
+                            nameFocusRequester.requestFocus()
                         }
                     }
                 }
             )
         )
-Spacer(modifier = Modifier.width(10.dp))
-        TextButton(onClick = { /*TODO*/
-        if (itemName.isNotEmpty()) {
-            onAddItem(Item(name = itemName, quantity = itemQuantity))
-            itemName = ""
-            itemQuantity = ""
-        }
-        },
-            colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF3F493F))
 
+        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.weight(0.5f))
+
+        TextButton(
+            onClick = {
+                if (itemName.isNotEmpty()) {
+                    onAddItem(Item(name = itemName, quantity = itemQuantity))
+                    itemName = ""
+                    itemQuantity = ""
+                    coroutineScope.launch {
+                        nameFocusRequester.requestFocus()
+                    }
+                }
+            },
+            colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF3F493F))
         ) {
             Text("Add", color = Color.White)
-
         }
     }
 }
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun ShoppingListScreen() {
     Surface(color = Color(0xffb3acaa)) {
@@ -390,20 +401,34 @@ fun ShoppingListScreen() {
 
         var showSavedItems by remember { mutableStateOf(false) }
 
-        Card (modifier = Modifier.size(width=600.dp,height=61.dp),
-            colors=CardDefaults.cardColors(
-                containerColor = Color(0xFFB8E0F1),
-
+//        Card (modifier = Modifier.size(width=600.dp,height=61.dp).fillMaxWidth(),
+//            colors=CardDefaults.cardColors(
+//                containerColor = Color(0xFFB8E0F1),
+//
+//            ),
+//            shape= RectangleShape
+//        ){
+//            SimpleTopAppBar()
+//        }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth() // This will make the Card take the full available width
+                .height(61.dp), // Set the height to a fixed 61.dp
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFB8E0F1)
             ),
-            shape= RectangleShape
-        ){
+            shape = RectangleShape
+        ) {
             SimpleTopAppBar()
         }
         LazyColumn(modifier = Modifier
             .fillMaxSize()
             .padding(top = 78.dp)) {
             item{
-                AddItemInput(onAddItem = { newItem ->
+                AddItemInput(
+                    Modifier.fillMaxWidth(),
+                   // modifier = Modifier.fillMaxWidth(),
+                    onAddItem = { newItem ->
                     newItemList.add(newItem)
                 })
             }
@@ -452,7 +477,7 @@ fun ShoppingListScreen() {
                     ItemListScreen(itemViewModel)
                 }
 
-                BannerAdView(isTest = true, banner = AdSize.FULL_BANNER)
+                BannerAdView(isTest = false, banner = AdSize.FULL_BANNER)
             }
 
 
@@ -546,38 +571,74 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
         }
     }
 }
-
-
 @Composable
 fun SimpleTopAppBar() {
-    val activity = (LocalContext.current as? Activity)
+    val activity = LocalContext.current as? Activity
     TopAppBar(
-        title = { Text("My Shopping List",color=Color.White, fontSize = 16.sp) },
+        title = {
+            Text(
+                text = "My Shopping List",
+                color = Color.White,
+                fontSize = 16.sp
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
         backgroundColor = Color(0xFF08628A),
         contentColor = Color.White,
         actions = {
-            IconButton(onClick = {
-              //  navController.popBackStack()
-                activity?.finish()
-             })
-            {
+            IconButton(
+                onClick = { activity?.finish() }
+            ) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp) // Adjust size as needed
-                        .background(color = Color(0xFFFFB300), shape = CircleShape) // Circle background
+                        .size(32.dp)
+                        .background(color = Color(0xFFFFB300), shape = CircleShape)
                 ) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Close App",
-                        tint = Color(0xFF08628A), // Icon color matching the background color
-                        modifier = Modifier.size(30.dp) // Adjust icon size
+                        tint = Color(0xFF08628A),
+                        modifier = Modifier.size(24.dp) // Adjusted icon size for better fit
                     )
                 }
-              //  Icon(Icons.Default.Close, contentDescription = "Search",tint=Color.White)
             }
         }
     )
 }
+
+
+//@Composable
+//fun SimpleTopAppBar() {
+//    val activity = (LocalContext.current as? Activity)
+//    TopAppBar(
+//        title = { Text("My Shopping List",color=Color.White, fontSize = 16.sp) },
+//        modifier = Modifier.fillMaxWidth(),
+//        backgroundColor = Color(0xFF08628A),
+//        contentColor = Color.White,
+//        actions = {
+//            Spacer(modifier = Modifier.weight(1f))
+//            IconButton(onClick = {
+//              //  navController.popBackStack()
+//                activity?.finish()
+//             })
+//            {
+//                Box(
+//                    modifier = Modifier
+//                        .size(32.dp) // Adjust size as needed
+//                        .background(color = Color(0xFFFFB300), shape = CircleShape) // Circle background
+//                ) {
+//                    Icon(
+//                        Icons.Default.Close,
+//                        contentDescription = "Close App",
+//                        tint = Color(0xFF08628A), // Icon color matching the background color
+//                        modifier = Modifier.size(30.dp) // Adjust icon size
+//                    )
+//                }
+//              //  Icon(Icons.Default.Close, contentDescription = "Search",tint=Color.White)
+//            }
+//        }
+//    )
+//}
 //
 //fun generateRandomKey(): Int {
 //    return Random.nextInt(1000, 10000) // Generates a random number from 1000 to 9999
