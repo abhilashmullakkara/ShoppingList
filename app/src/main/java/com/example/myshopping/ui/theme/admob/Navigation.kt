@@ -17,6 +17,7 @@ fun AppNavigation() {
 }
 
 @Composable
+
 fun MainScreen() {
     ShoppingListScreen()
     // Your main screen content here
