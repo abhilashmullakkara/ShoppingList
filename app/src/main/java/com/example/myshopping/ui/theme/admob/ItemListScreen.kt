@@ -40,15 +40,15 @@ fun ItemListScreen(itemViewModel: ItemViewModel = viewModel()) {
                     Text(text = (index+1).toString(), modifier = Modifier
                         .padding(start = 5.dp)
                         .weight(0.15f),
-                        color = Color.Blue, fontSize = 16.sp)
+                        color = Color.White, fontSize = 16.sp)
                     Text(
                         text = item.name,
-                        color = Color.Blue,
+                        color =  Color(0xFF01051B),
                         fontSize = 16.sp,
                         modifier = Modifier.weight(1f)
                     )
                     Text(text = item.quantity,
-                        modifier = Modifier.weight(0.15f),color = Color.Blue, fontSize = 16.sp)
+                        modifier = Modifier.weight(0.15f),color =  Color(0xFF01051B), fontSize = 16.sp)
                     FloatingActionButton(
                         onClick = {
                             itemViewModel.deleteItem(item)

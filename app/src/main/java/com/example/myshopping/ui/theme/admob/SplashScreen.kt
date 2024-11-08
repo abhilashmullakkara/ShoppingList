@@ -31,7 +31,7 @@ import kotlinx.coroutines.delay
 fun SplashScreen(navController: NavController) {
     // Define an Animatable for scaling the logo from normal size to beyond the screen size
     val scale = remember { Animatable(1f) }
-    val splashDuration = 2500L
+    val splashDuration = 1500L
 
     // Launch the scaling animation
     LaunchedEffect(Unit) {
@@ -39,7 +39,7 @@ fun SplashScreen(navController: NavController) {
         scale.animateTo(
             targetValue = 5f, // Scale up to 3 times the original size
             animationSpec = tween(
-                durationMillis = 1500,
+                durationMillis = 1000,
                 easing = FastOutSlowInEasing
             )
         )

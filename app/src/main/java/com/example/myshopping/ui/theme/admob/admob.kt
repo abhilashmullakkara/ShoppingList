@@ -2,43 +2,53 @@ package com.example.myshopping.ui.theme.admob
 
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -48,16 +58,6 @@ import com.example.myshopping.ui.theme.item.Item
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import kotlin.random.Random
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.input.ImeAction
 import kotlinx.coroutines.launch
 
 //
@@ -224,29 +224,29 @@ import kotlinx.coroutines.launch
 //}
 //
 //// Composable function for the save button
-@Composable
-fun SaveButton(newItemList: List<Item>, itemViewModel: ItemViewModel, onSave: () -> Unit) {
-    if (newItemList.isNotEmpty()) {
-        TextButton(
-            onClick = {
-                newItemList.forEach { item ->
-                    //Log.d("SaveButton", "Inserting item: ${item.name}, Quantity: ${item.quantity}")
-                    Log.d("PrimaryKey", "Inserting item: ${item.id}, Name: ${item.name} Quantity: ${item.quantity}")
-
-                    itemViewModel.insertItem(item)
-                }
-                onSave() // Call onSave to update the flag
-            },
-            colors = ButtonDefaults.textButtonColors(
-                containerColor = Color(0xFFAF0F0C),
-                contentColor = Color.White
-            ),
-            modifier = Modifier.padding(start = 15.dp)
-        ) {
-            Text("SAVE")
-        }
-    }
-}
+//@Composable
+//fun SaveButton(newItemList: List<Item>, itemViewModel: ItemViewModel, onSave: () -> Unit) {
+//    if (newItemList.isNotEmpty()) {
+//        TextButton(
+//            onClick = {
+//                newItemList.forEach { item ->
+//                    //Log.d("SaveButton", "Inserting item: ${item.name}, Quantity: ${item.quantity}")
+//                    Log.d("PrimaryKey", "Inserting item: ${item.id}, Name: ${item.name} Quantity: ${item.quantity}")
+//
+//                    itemViewModel.insertItem(item)
+//                }
+//                onSave() // Call onSave to update the flag
+//            },
+//            colors = ButtonDefaults.textButtonColors(
+//                containerColor = Color(0xFFAF0F0C),
+//                contentColor = Color.White
+//            ),
+//            modifier = Modifier.padding(start = 15.dp)
+//        ) {
+//            Text("SAVE")
+//        }
+//    }
+//}
 //
 //// Composable function for saved and view buttons
 //@Composable
@@ -301,57 +301,29 @@ fun BannerAdView(
         )
     }
 }
-
 @Composable
-fun AddItemInput(
-    onAddItem: (Item) -> Unit
-) {
-    var itemName by remember { mutableStateOf("") }
-    var itemQuantity by remember { mutableStateOf("") }
+fun AddItemInput(onAddItem: (Item) -> Unit) {
+    var itemName by remember { mutableStateOf("") }  // String type
+    var itemQuantity by remember { mutableStateOf("") }  // String type
     val focusRequester = remember { FocusRequester() }
     val coroutineScope = rememberCoroutineScope()
 
-    Row(modifier = Modifier.padding(8.dp)){
+    Row(modifier = Modifier.padding(start = 8.dp).fillMaxWidth()) {
         TextField(
-            value = itemName,
+            value = itemName,  // Ensure this is a String
             onValueChange = { itemName = it },
-            label = { Text("Item") },
+            label = { Text("Item Name", color = Color.Black, fontSize = 16.sp) },
             modifier = Modifier
-                .fillMaxWidth(0.4f)
+                .fillMaxWidth(0.45f)
                 .focusRequester(focusRequester),
+
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    if (itemName.isNotEmpty() && itemQuantity.isNotEmpty()) {
+                    if (itemName.isNotEmpty()) {
                         onAddItem(Item(name = itemName, quantity = itemQuantity))
                         itemName = ""
                         itemQuantity = ""
-
-                        // Request focus back to the first input field
-                        coroutineScope.launch {
-                            focusRequester.requestFocus()
-                        }
-                    }
-                }
-            )
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        TextField(
-            value = itemQuantity,
-            onValueChange = { itemQuantity = it },
-            label = { Text("Quantity") },
-            modifier = Modifier.fillMaxWidth(0.5f),
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    if (itemName.isNotEmpty() && itemQuantity.isNotEmpty()) {
-                        onAddItem(Item(name = itemName, quantity = itemQuantity))
-                        itemName = ""
-                        itemQuantity = ""
-
-                        // Request focus back to the first input field
                         coroutineScope.launch {
                             focusRequester.requestFocus()
                         }
@@ -362,25 +334,47 @@ fun AddItemInput(
 
         Spacer(modifier = Modifier.width(10.dp))
 
-        Button(onClick = {
-            if (itemName.isNotEmpty() && itemQuantity.isNotEmpty()) {
-                onAddItem(Item(name = itemName, quantity = itemQuantity))
-                itemName = ""
-                itemQuantity = ""
+        TextField(
+            value = itemQuantity,
+            onValueChange = { itemQuantity = it },
+            label = { Text("Unit", color = Color.Black, fontSize = 16.sp) },
+            modifier = Modifier
+                .fillMaxWidth(0.45f)
+                .focusRequester(focusRequester),
 
-                // Request focus back to the first input field
-                coroutineScope.launch {
-                    focusRequester.requestFocus()
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    if (itemName.isNotEmpty()) {
+                        onAddItem(Item(name = itemName, quantity = itemQuantity))
+                        itemName = ""
+                        itemQuantity = ""
+
+                        // Request focus back to the first input field
+                        coroutineScope.launch {
+                            focusRequester.requestFocus()
+                        }
+                    }
                 }
-            }
-        }, colors= ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF08628A),
-            contentColor = Color.White
-        )) {
-            Text("Add", fontSize = 14.sp,color=Color.White)
+            )
+        )
+Spacer(modifier = Modifier.width(10.dp))
+        TextButton(onClick = { /*TODO*/
+        if (itemName.isNotEmpty()) {
+            onAddItem(Item(name = itemName, quantity = itemQuantity))
+            itemName = ""
+            itemQuantity = ""
+        }
+        },
+            colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF3F493F))
+
+        ) {
+            Text("Add", color = Color.White)
+
         }
     }
 }
+
 
 @Composable
 fun ShoppingListScreen() {
@@ -396,92 +390,117 @@ fun ShoppingListScreen() {
 
         var showSavedItems by remember { mutableStateOf(false) }
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Card (modifier = Modifier.size(width=600.dp,height=61.dp),
+            colors=CardDefaults.cardColors(
+                containerColor = Color(0xFFB8E0F1),
+
+            ),
+            shape= RectangleShape
+        ){
             SimpleTopAppBar()
-            AddItemInput(onAddItem = { newItem ->
-                newItemList.add(newItem)
-            })
-
-            // Ensure NewItemListDisplay recomposes when newItemList changes
-            NewItemListDisplay(newItemList, itemViewModel)
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                TextButton(
-                    onClick = { newItemList.forEach { itemViewModel.insertItem(it)
-                    Toast.makeText(context, "Items Saved...", Toast.LENGTH_SHORT).show()
-                    } },
-                    colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFFAF0F0C))
-                ) { Text("Save Items", color = Color.White) }
-
-                TextButton(
-                    onClick = { showSavedItems = true },
-                    colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF08628A))
-                ) { Text("View Saved", color = Color.White) }
-
-                TextButton(
-                    onClick = {
-                        newItemList.clear()  // Trigger recomposition
-                        showSavedItems = false // Hide saved items view after clearing
-                    },
-                    colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF08628A))
-                ) { Text("CLEAR", color = Color.White) }
-            }
-
-            if (showSavedItems) {
-                ItemListScreen(itemViewModel)
-            }
-
-            BannerAdView(isTest = true, banner = AdSize.FULL_BANNER)
         }
-    }
-}
-
-
-@Composable
-fun ItemListDisplay(newItemList: MutableList<Item>) {
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .padding(8.dp)) {
-        itemsIndexed(newItemList) { index, item ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .background(Color(0xFF258171), RoundedCornerShape(8.dp)),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${index + 1}. ${item.name}",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .weight(0.7f)
-                        .padding(start = 8.dp)
-                )
-                Text(
-                    text = item.quantity,
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier
-                        .weight(0.2f)
-                        .padding(end = 8.dp)
-                )
-                IconButton(onClick = {
-                    newItemList.remove(item)
+        LazyColumn(modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 78.dp)) {
+            item{
+                AddItemInput(onAddItem = { newItem ->
+                    newItemList.add(newItem)
                 })
-                {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove", tint = Color.Red)
+            }
+
+            item{
+                NewItemListDisplay(newItemList, itemViewModel)
+
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    TextButton(
+                        onClick = {
+                            if (newItemList.isNotEmpty())
+                            Toast.makeText(context, "Items Saved...", Toast.LENGTH_SHORT).show()
+
+                            newItemList.forEach { itemViewModel.insertItem(it)
+                           // Toast.makeText(context, "Items Saved...", Toast.LENGTH_SHORT).show()
+                        } },
+                        colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFFAF0F0C))
+                    ) { Text("Save Items", color = Color.White) }
+
+                    TextButton(
+                        onClick = { showSavedItems = true },
+                        colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF08628A))
+                    ) { Text("View Saved", color = Color.White) }
+
+                    TextButton(
+                        onClick = {
+                            newItemList.clear()  // Trigger recomposition
+                            showSavedItems = false // Hide saved items view after clearing
+                        },
+                        colors = ButtonDefaults.textButtonColors(containerColor = Color(0xFF08628A))
+                    ) { Text("CLEAR", color = Color.White) }
                 }
             }
+
+            // Ensure NewItemListDisplay recomposes when newItemList changes
+
+
+            item{
+                if (showSavedItems) {
+                    ItemListScreen(itemViewModel)
+                }
+
+                BannerAdView(isTest = true, banner = AdSize.FULL_BANNER)
+            }
+
+
         }
     }
 }
+
+//
+//@Composable
+//fun ItemListDisplay(newItemList: MutableList<Item>) {
+//    LazyColumn(modifier = Modifier
+//        .fillMaxSize()
+//        .padding(8.dp)) {
+//        itemsIndexed(newItemList) { index, item ->
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp)
+//                    .background(Color(0xFF258171), RoundedCornerShape(8.dp)),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Text(
+//                    text = "${index + 1}. ${item.name}",
+//                    color = Color.White,
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier
+//                        .weight(0.7f)
+//                        .padding(start = 8.dp)
+//                )
+//                Text(
+//                    text = item.quantity,
+//                    color = Color.White,
+//                    fontWeight = FontWeight.Medium,
+//                    modifier = Modifier
+//                        .weight(0.2f)
+//                        .padding(end = 8.dp)
+//                )
+//                IconButton(onClick = {
+//                    newItemList.remove(item)
+//                })
+//                {
+//                    Icon(Icons.Default.Delete, contentDescription = "RemoveIcon", tint = Color.Red)
+//                }
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewModel) {
@@ -495,7 +514,7 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
             // Display the item's index and name
             Text(
                 text = "${index+1}. ${item.name}",
-                color = Color.Blue,
+                color = Color(0xFF0B2E0D),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 modifier = Modifier
@@ -506,7 +525,7 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
             // Display the quantity
             Text(
                 text = item.quantity,
-                color = Color.White,
+                color =  Color(0xFF0B2E0D),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(start = 10.dp,end=90.dp)
             )
@@ -520,7 +539,7 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Remove",
+                    contentDescription = "RemoveIcon",
                     tint = Color.Red
                 )
             }
@@ -531,21 +550,38 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
 
 @Composable
 fun SimpleTopAppBar() {
+    val activity = (LocalContext.current as? Activity)
     TopAppBar(
-        title = { Text("My Shopping List") },
+        title = { Text("My Shopping List",color=Color.White, fontSize = 16.sp) },
         backgroundColor = Color(0xFF08628A),
         contentColor = Color.White,
         actions = {
-            IconButton(onClick = { /* Handle click */ }) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
+            IconButton(onClick = {
+              //  navController.popBackStack()
+                activity?.finish()
+             })
+            {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp) // Adjust size as needed
+                        .background(color = Color(0xFFFFB300), shape = CircleShape) // Circle background
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close App",
+                        tint = Color(0xFF08628A), // Icon color matching the background color
+                        modifier = Modifier.size(30.dp) // Adjust icon size
+                    )
+                }
+              //  Icon(Icons.Default.Close, contentDescription = "Search",tint=Color.White)
             }
         }
     )
 }
-
-fun generateRandomKey(): Int {
-    return Random.nextInt(1000, 10000) // Generates a random number from 1000 to 9999
-}
+//
+//fun generateRandomKey(): Int {
+//    return Random.nextInt(1000, 10000) // Generates a random number from 1000 to 9999
+//}
 
 
 
