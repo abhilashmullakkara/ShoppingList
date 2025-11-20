@@ -39,5 +39,19 @@ class ItemViewModel(private val repository: ItemRepository) : ViewModel() {
             repository.delete(item)
         }
     }
+    fun toggleItemBoughtState(itemId: String) {
+        viewModelScope.launch {
+            // Get current item from the StateFlow
+            val currentItem = _allItems.value.find { it.id == itemId }
+            currentItem?.let { item ->
+                // Create updated item with toggled buyOrNot state
+                val updatedItem = item.copy(buyOrNot = !item.buyOrNot)
+                // Update in database through repository
+                repository.update(updatedItem)
+                // The StateFlow will automatically update when repository emits new data
+            }
+        }
+    }
+
 }
 

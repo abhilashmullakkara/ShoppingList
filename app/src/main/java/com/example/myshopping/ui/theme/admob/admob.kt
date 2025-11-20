@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,13 +21,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +38,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -357,7 +362,7 @@ fun NewItemListDisplay(newItemList: MutableList<Item>, itemViewModel: ItemViewMo
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Current Shopping List",
+                text = "Current Shopping List (Not saved!)",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF2C3E50),
@@ -507,6 +512,7 @@ fun SimpleTopAppBar() {
     }
 }
 
+
 @Composable
 fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
     val savedItems = itemViewModel.allItems.collectAsState(initial = emptyList())
@@ -539,7 +545,7 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
                     Text(
                         text = "✓",
                         color = Color.White,
-                        fontSize = 28.sp,
+                        fontSize = 25.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -585,6 +591,19 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
                 }
             } else {
                 savedItems.value.forEachIndexed { index, item ->
+                    var showEditDialog by remember { mutableStateOf(false) }
+
+                    // Edit Dialog
+                    if (showEditDialog) {
+                        EditItemDialog(
+                            item = item,
+                            onDismiss = { showEditDialog = false },
+                            onSave = { updatedItem ->
+                                itemViewModel.updateItem(updatedItem)
+                            }
+                        )
+                    }
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -604,7 +623,7 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
                                 modifier = Modifier
                                     .size(40.dp)
                                     .background(
-                                        color = Color(0xFF4CAF50),
+                                        color = if (item.buyOrNot) Color.Gray else Color(0xFF4CAF50),
                                         shape = CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
@@ -620,13 +639,38 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
                             Spacer(modifier = Modifier.width(14.dp))
 
                             // Item details
+                            // Item details
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = item.name,
-                                    color = Color(0xFF1B5E20),
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 17.sp
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item.name,
+                                        color = if (item.buyOrNot) Color.Gray else Color(0xFF1B5E20),
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 17.sp,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable {
+                                                itemViewModel.toggleItemBoughtState(item.id)
+                                            }
+                                    )
+
+                                    // Edit button next to the name
+                                    IconButton(
+                                        onClick = { showEditDialog = true },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit Item",
+                                            tint = Color(0xFF1976D2),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+
+                                // Quantity row (only if quantity exists)
                                 if (item.quantity.isNotEmpty()) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -636,37 +680,53 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
                                             modifier = Modifier
                                                 .size(6.dp)
                                                 .background(
-                                                    color = Color(0xFF81C784),
+                                                    color = if (item.buyOrNot) Color.LightGray else Color(0xFF81C784),
                                                     shape = CircleShape
                                                 )
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = item.quantity,
-                                            color = Color(0xFF558B2F),
+                                            color = if (item.buyOrNot) Color.LightGray else Color(0xFF558B2F),
                                             fontSize = 14.sp,
-                                            fontWeight = FontWeight.Medium
+                                            fontWeight = FontWeight.Medium,
                                         )
                                     }
                                 }
                             }
 
-                            // Delete button with hover effect
-                            IconButton(
-                                onClick = { itemViewModel.deleteItem(item) },
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .background(
-                                        color = Color(0xFFFFEBEE),
-                                        shape = CircleShape
-                                    )
-                            ) {
+                            // Show checkmark if item is bought, otherwise show delete button
+                            if (item.buyOrNot) {
                                 Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remove Saved Item",
-                                    tint = Color(0xFFE53935),
-                                    modifier = Modifier.size(22.dp)
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Item bought",
+                                    tint = Color(0xFF4CAF50),
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .background(
+                                            color = Color(0xFFE8F5E9),
+                                            shape = CircleShape
+                                        )
+                                        .padding(8.dp)
                                 )
+                            } else {
+                                // Delete button with hover effect
+                                IconButton(
+                                    onClick = { itemViewModel.deleteItem(item) },
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .background(
+                                            color = Color(0xFFFFEBEE),
+                                            shape = CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove Saved Item",
+                                        tint = Color(0xFFE53935),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -675,6 +735,83 @@ fun SavedItemsDisplay(itemViewModel: ItemViewModel) {
         }
     }
 }
+
+// Add this EditItemDialog composable function
+@Composable
+fun EditItemDialog(
+    item: Item,
+    onDismiss: () -> Unit,
+    onSave: (Item) -> Unit
+) {
+    var editedName by remember { mutableStateOf(item.name) }
+    var editedQuantity by remember { mutableStateOf(item.quantity) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Edit Item",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1B5E20)
+            )
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = editedName,
+                    onValueChange = { editedName = it },
+                    label = { Text("Item Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF4CAF50),
+                        focusedLabelColor = Color(0xFF4CAF50)
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = editedQuantity,
+                    onValueChange = { editedQuantity = it },
+                    label = { Text("Quantity (optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF4CAF50),
+                        focusedLabelColor = Color(0xFF4CAF50)
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val updatedItem = item.copy(
+                        name = editedName.trim(),
+                        quantity = editedQuantity.trim()
+                    )
+                    onSave(updatedItem)
+                    onDismiss()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+                enabled = editedName.trim().isNotEmpty()
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color(0xFF757575)
+                )
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+//                    }
+//}
 
 @Preview(showBackground = true)
 @Composable

@@ -73,6 +73,8 @@ dependencies {
    // val  room_version = ("2.6.1")
     //val compose_ui_version=("1.5.3")
     implementation (libs.androidx.room.runtime.v261)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.material3)
     annotationProcessor (libs.androidx.room.compiler.v261)
     implementation (libs.integrity)
     implementation (libs.core.ktx)

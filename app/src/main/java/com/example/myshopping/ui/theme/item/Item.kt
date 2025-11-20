@@ -17,5 +17,6 @@ import java.util.UUID
 data class Item(
     @PrimaryKey var id: String = UUID.randomUUID().toString(),
     val name: String,
-    val quantity: String
+    val quantity: String,
+    var buyOrNot: Boolean=false
 )
