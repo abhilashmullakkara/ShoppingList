@@ -20,6 +20,4 @@ fun AppNavigation() {
 
 fun MainScreen() {
     ShoppingListScreen()
-    // Your main screen content here
-    //Text(text = "Welcome to the Shopping App!", fontSize = 24.sp)
 }

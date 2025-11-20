@@ -19,8 +19,8 @@ android {
         minSdk = 29
         //noinspection EditedTargetSdkVersion
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -103,6 +103,9 @@ dependencies {
     implementation (libs.navigation.compose)
   //  val nav_version = "2.8.3"
 
+
+    implementation("androidx.compose.animation:animation-core:1.6.8")
+    implementation("androidx.compose.material3:material3:1.2.1")
     implementation (libs.androidx.navigation.compose.v283)
     //adMob
     implementation (libs.play.services.ads.v2350)

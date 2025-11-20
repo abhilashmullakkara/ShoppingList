@@ -14,10 +14,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyShoppingTheme {
-               // HomeScreen()
-                //DrawerWithScaffold()
-                //StringList()
-               // ShoppingListScreen()
                 AppNavigation()
             }
             }
